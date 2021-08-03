@@ -1,9 +1,7 @@
 package com.oleohialli.api
 
-import com.oleohialli.models.ResponseObject
+import com.oleohialli.models.Lesson
 
 data class LessonsResponse(
-    val result: ResponseObject
-) {
-
-}
+    val lessons: List<Lesson>
+)

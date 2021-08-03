@@ -5,32 +5,31 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".views.LessonFragment">
 
+    <ProgressBar
+        android:id="@+id/progressLoader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_centerInParent="true" />
+
+    <TextView
+        android:id="@+id/textViewDone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:text="@string/done"
+        android:textSize="62sp"
+        android:textStyle="bold|italic"
+        android:textColor="@android:color/holo_green_dark"
+        android:layout_centerInParent="true" />
+
     <LinearLayout
+        android:id="@+id/contentLayout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="36dp"
-        android:background="@color/white">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="Hello "
-            android:layout_marginStart="8dp"
-            android:padding="8dp"
-            android:layout_marginLeft="8dp" />
-
-        <EditText
-            android:id="@+id/editTextInterraction"
-            android:layout_width="72dp"
-            android:layout_height="match_parent"
-            android:padding="8dp" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:text="!"
-            android:padding="8dp"/>
+        android:background="@color/black">
 
     </LinearLayout>
 

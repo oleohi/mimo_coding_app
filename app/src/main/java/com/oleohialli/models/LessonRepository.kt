@@ -1,21 +1,19 @@
 package com.oleohialli.models
 
-import androidx.paging.Pager
-import androidx.paging.PagingConfig
-import androidx.paging.liveData
 import com.oleohialli.api.LessonsApi
+import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class LessonRepository @Inject constructor(private val lessonsApi: LessonsApi) {
 
-    fun getLessons() = Pager(
-        config = PagingConfig(
-            pageSize = 3,
-            maxSize = 10,
-            enablePlaceholders = false
-        ),
-        pagingSourceFactory = { LessonPagingSource(lessonsApi) }
-    ).liveData
+    suspend fun getLessons() : Result<List<Lesson>> {
+        return try {
+            val response = lessonsApi.getLessons()
+            Result.success(response.lessons)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

@@ -12,15 +12,9 @@ data class Lesson(
 
     @Parcelize
     data class LessonContent(
-        val contentData: List<ContentData>
-    ) : Parcelable {
-
-        @Parcelize
-        data class ContentData(
-            val color: String,
-            val text: String
-        ) : Parcelable
-    }
+        val color: String,
+        val text: String
+    ) : Parcelable
 
     @Parcelize
     data class InputParams(

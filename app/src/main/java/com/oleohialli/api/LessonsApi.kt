@@ -8,6 +8,6 @@ interface LessonsApi {
         const val BASE_URL = "https://mimochallenge.azurewebsites.net/api/"
     }
 
-    @GET("/lessons")
+    @GET("lessons")
     suspend fun getLessons(): LessonsResponse
 }
