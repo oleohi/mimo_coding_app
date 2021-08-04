@@ -2,27 +2,28 @@ package com.oleohialli.views
 
 import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.*
+import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewModelScope
 import com.google.android.material.snackbar.Snackbar
 import com.oleohialli.R
 import com.oleohialli.databinding.FragmentLessonBinding
-import com.oleohialli.models.Lesson
+import com.oleohialli.data.Lesson
+import com.oleohialli.data.Lesson.LessonContent
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
 import okhttp3.internal.immutableListOf
-import okhttp3.internal.toImmutableList
+import java.sql.Time
+import java.util.*
 
 @AndroidEntryPoint
 class LessonFragment : Fragment(R.layout.fragment_lesson) {
@@ -34,7 +35,10 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
     private val binding get() = _binding!!
     private var lessons = immutableListOf<Lesson>()
     private var lessonIndex = 0
-    private var contentString = ""
+    private var contentString: String = ""
+    private var interactionString: String = ""
+    private var startIndex: Int = 0
+    private var endIndex: Int = 0
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -44,51 +48,21 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
 
         getLessons()
 
-        //Todo: Use this block to collect interaction events
+        // Use this block to collect interaction events
         viewLifecycleOwner.lifecycleScope.launchWhenStarted {
             viewModel.lessonEvent.collect { event ->
                 when (event) {
-                    is LessonViewModel.LessonEvent.ShowNetworkError -> {
-                        Snackbar.make(
-                            requireView(),
-                            "Error retrieving lessons",
-                            Snackbar.LENGTH_LONG
-                        )
-                            .setAction("RETRY") {
-                                getLessons()
-                            }.show()
+                    is LessonViewModel.LessonEvent.ShowLessonSavedMessage -> {
+                        Snackbar.make(requireView(), event.message, Snackbar.LENGTH_LONG).show()
                     }
                 }
             }
-
         }
 
         binding.nextButton.setOnClickListener {
-
-            //clear text views
-            refreshFragment(binding.contentLayout)
-            lessonIndex++
+            clearContent(binding.contentLayout)
             contentString = ""
-
-            // Load next lesson
-            if (lessonIndex < lessons.size) {
-                val lesson = loadLesson(lessonIndex)
-                lesson.content.forEach {
-                    inflateTextView(binding.contentLayout, it.text, it.color)
-                    contentString += it.text
-                }
-                println(contentString)
-                if (lesson.input != null) {
-                    // Create substring and load input field
-                }
-
-            } else {
-                binding.apply {
-                    textViewDone.isVisible = true
-                    nextButton.isVisible = false
-                    contentLayout.isVisible = false
-                }
-            }
+            displayLesson()
         }
     }
 
@@ -100,21 +74,12 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
 
         viewModel.getLessons().observe(viewLifecycleOwner, { result ->
             if (result.isSuccess) {
-                result.onSuccess { it ->
+                result.onSuccess {
                     binding.progressLoader.isVisible = false
                     binding.nextButton.isVisible = true
-                    lessons = it
-                    // Load first lesson (which is at index 0)
-                    val lesson = loadLesson(lessonIndex)
-                    lesson.content.forEach {
-                        inflateTextView(binding.contentLayout, it.text, it.color)
-                        contentString += it.text
-                    }
-                    println(contentString)
-                    if (lesson.input != null) {
-                        // Create substring and load input field
-                    }
 
+                    lessons = it
+                    displayLesson()
                 }
             } else {
                 result.onFailure {
@@ -136,12 +101,101 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
         })
     }
 
-    private fun loadLesson(index: Int): Lesson {
-        return lessons[index]
+    private fun displayLesson() {
+
+        if (lessonIndex < lessons.size) {
+            viewModel.startTime = Calendar.getInstance().time.toString()
+
+            val lesson = lessons[lessonIndex]
+            lesson.content.forEach {
+                contentString += it.text
+            }
+
+            if (lesson.input != null) {
+                val input = lesson.input
+                interactionString = contentString.substring(input.startIndex, input.endIndex)
+                startIndex = input.startIndex
+                endIndex = input.endIndex
+
+                // Because there are three possible ways the input display can come in
+                // [beginning, middle and ending] of the concatenated string of content.
+                // This is not the most efficient way to do this.
+                // Ideally, the views should be populated dynamically
+                if (startIndex == 0) {
+                    inflateEditText(binding.contentLayout, lesson.content[0].color)
+                    inflateTextView(binding.contentLayout, lesson.content[1].text, lesson.content[1].color)
+                    inflateTextView(binding.contentLayout, lesson.content[2].text, lesson.content[2].color)
+                }
+                if(startIndex > 0 && endIndex < contentString.length - 1){
+                    inflateTextView(binding.contentLayout, lesson.content[0].text, lesson.content[0].color)
+                    inflateEditText(binding.contentLayout, lesson.content[1].color)
+                    inflateTextView(binding.contentLayout, lesson.content[2].text, lesson.content[2].color)
+                }
+                if(endIndex == contentString.length - 1) {
+                    inflateTextView(binding.contentLayout, lesson.content[0].text, lesson.content[0].color)
+                    inflateTextView(binding.contentLayout, lesson.content[1].text, lesson.content[1].color)
+                    inflateEditText(binding.contentLayout, lesson.content[2].color)
+
+                    // If user input is correct, save to database
+
+                    viewModel.endTime = Calendar.getInstance().time.toString()
+                    // Save to database
+                    //viewModel.saveLesson(lesson)
+                    //viewModel.showLessonCompleteMessage("Lesson saved!")
+                }
+            } else {
+                interactionString = ""
+                lesson.content.forEach {
+                    inflateTextView(binding.contentLayout, it.text, it.color)
+                }
+            }
+
+        } else {
+            binding.apply {
+                textViewDone.isVisible = true
+                nextButton.isVisible = false
+                contentLayout.isVisible = false
+            }
+        }
+        lessonIndex++
+    }
+
+
+    private fun inflateEditText(
+        contentLayout: LinearLayout,
+        color: String
+    ) {
+
+        val editText = EditText(requireContext())
+        //add edit text properties
+        editText.layoutParams = LinearLayout.LayoutParams(
+            200, ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+        editText.setPadding(8, 8, 8, 8)
+        editText.setTextColor(Color.parseColor(color))
+        //editText.maxWidth = inputLength
+        editText.maxLines = 1
+        editText.isFocusable = true
+        editText.requestFocus()
+        editText.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                binding.nextButton.isVisible = false
+            }
+
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) { }
+
+            override fun afterTextChanged(s: Editable?) {
+                if (interactionString == s.toString()) {
+                    binding.nextButton.isVisible = true
+                }
+            }
+        })
+        contentLayout.addView(editText)
     }
 
     private fun inflateTextView(contentLayout: LinearLayout, text: String, color: String) {
         val textView = TextView(requireContext())
+        //add text view properties
         textView.layoutParams = LinearLayout.LayoutParams(
             ViewGroup.LayoutParams.WRAP_CONTENT,
             ViewGroup.LayoutParams.WRAP_CONTENT,
@@ -153,17 +207,7 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
         contentLayout.addView(textView)
     }
 
-    private fun inflateInputField(contentLayout: LinearLayout, startIndex: Int, endIndex: Int) {
-        val editText = EditText(requireContext())
-        editText.layoutParams = LinearLayout.LayoutParams(
-            ViewGroup.LayoutParams.WRAP_CONTENT,
-            ViewGroup.LayoutParams.WRAP_CONTENT
-        )
-        editText.setPadding(8, 8, 8, 8)
-        contentLayout.addView(editText)
-    }
-
-    private fun refreshFragment(contentLayout: LinearLayout) {
+    private fun clearContent(contentLayout: LinearLayout) {
         contentLayout.children.forEach {
             if (it is TextView) {
                 it.text = ""

@@ -1,12 +1,12 @@
-package com.oleohialli.models
+package com.oleohialli.api
 
-import com.oleohialli.api.LessonsApi
+import com.oleohialli.data.Lesson
 import java.lang.Exception
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class LessonRepository @Inject constructor(private val lessonsApi: LessonsApi) {
+class LessonRepository @Inject constructor(private val lessonsApi: LessonApi) {
 
     suspend fun getLessons() : Result<List<Lesson>> {
         return try {

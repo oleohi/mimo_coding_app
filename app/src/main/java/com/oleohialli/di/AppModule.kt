@@ -1,7 +1,7 @@
 package com.oleohialli.di
 
 import com.oleohialli.BuildConfig
-import com.oleohialli.api.LessonsApi
+import com.oleohialli.api.LessonApi
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -37,7 +37,7 @@ object AppModule {
             httpClientBuilder.addInterceptor(loggingInterceptor)
         }
         return Retrofit.Builder()
-            .baseUrl(LessonsApi.BASE_URL)
+            .baseUrl(LessonApi.BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(httpClientBuilder.build())
             .build()
@@ -45,6 +45,20 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideLessonsApi(retrofit: Retrofit): LessonsApi =
-        retrofit.create(LessonsApi::class.java)
+    fun provideLessonsApi(retrofit: Retrofit): LessonApi =
+        retrofit.create(LessonApi::class.java)
+
+
+//    @Provides
+//    @Singleton
+//    fun provideDatabase(application: Application,
+//                        callback: LessonDatabase.Callback) =
+//        Room.databaseBuilder(application, LessonDatabase::class.java, Constants.DATABASE_NAME)
+//            .fallbackToDestructiveMigration()
+//            .addCallback(callback)
+//            .build()
+
+    //@Provides
+//    fun provideFarmerDao(database: LessonDatabase) = database.lessonDao()
+
 }
