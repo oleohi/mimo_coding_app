@@ -1,7 +1,11 @@
 package com.oleohialli.di
 
+import android.app.Application
+import androidx.room.Room
 import com.oleohialli.BuildConfig
+import com.oleohialli.Constants
 import com.oleohialli.api.LessonApi
+import com.oleohialli.data.LessonDatabase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -49,16 +53,16 @@ object AppModule {
         retrofit.create(LessonApi::class.java)
 
 
-//    @Provides
-//    @Singleton
-//    fun provideDatabase(application: Application,
-//                        callback: LessonDatabase.Callback) =
-//        Room.databaseBuilder(application, LessonDatabase::class.java, Constants.DATABASE_NAME)
-//            .fallbackToDestructiveMigration()
-//            .addCallback(callback)
-//            .build()
+    @Provides
+    @Singleton
+    fun provideDatabase(application: Application,
+                        callback: LessonDatabase.Callback) =
+        Room.databaseBuilder(application, LessonDatabase::class.java, Constants.DATABASE_NAME)
+            .fallbackToDestructiveMigration()
+            .addCallback(callback)
+            .build()
 
-    //@Provides
-//    fun provideFarmerDao(database: LessonDatabase) = database.lessonDao()
+    @Provides
+    fun provideFarmerDao(database: LessonDatabase) = database.lessonDao()
 
 }

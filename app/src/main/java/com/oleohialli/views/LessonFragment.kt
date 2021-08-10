@@ -4,11 +4,13 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
+import android.util.Log
 import android.view.View
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.*
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -113,7 +115,7 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
 
             if (lesson.input != null) {
                 val input = lesson.input
-                interactionString = contentString.substring(input.startIndex, input.endIndex)
+                interactionString = contentString.substring(input!!.startIndex, input.endIndex)
                 startIndex = input.startIndex
                 endIndex = input.endIndex
 
@@ -122,27 +124,21 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
                 // This is not the most efficient way to do this.
                 // Ideally, the views should be populated dynamically
                 if (startIndex == 0) {
-                    inflateEditText(binding.contentLayout, lesson.content[0].color)
+                    inflateEditText(binding.contentLayout, lesson.content[0].color, lesson)
                     inflateTextView(binding.contentLayout, lesson.content[1].text, lesson.content[1].color)
                     inflateTextView(binding.contentLayout, lesson.content[2].text, lesson.content[2].color)
                 }
                 if(startIndex > 0 && endIndex < contentString.length - 1){
                     inflateTextView(binding.contentLayout, lesson.content[0].text, lesson.content[0].color)
-                    inflateEditText(binding.contentLayout, lesson.content[1].color)
+                    inflateEditText(binding.contentLayout, lesson.content[1].color, lesson)
                     inflateTextView(binding.contentLayout, lesson.content[2].text, lesson.content[2].color)
                 }
                 if(endIndex == contentString.length - 1) {
                     inflateTextView(binding.contentLayout, lesson.content[0].text, lesson.content[0].color)
                     inflateTextView(binding.contentLayout, lesson.content[1].text, lesson.content[1].color)
-                    inflateEditText(binding.contentLayout, lesson.content[2].color)
-
-                    // If user input is correct, save to database
-
-                    viewModel.endTime = Calendar.getInstance().time.toString()
-                    // Save to database
-                    //viewModel.saveLesson(lesson)
-                    //viewModel.showLessonCompleteMessage("Lesson saved!")
+                    inflateEditText(binding.contentLayout, lesson.content[2].color, lesson)
                 }
+
             } else {
                 interactionString = ""
                 lesson.content.forEach {
@@ -160,10 +156,17 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
         lessonIndex++
     }
 
+    private fun saveLesson(lesson: Lesson) {
+        viewModel.endTime = Calendar.getInstance().time.toString()
+        viewModel.saveLesson(lesson)
+        Log.v(TAG, "SAVED!!")
+        viewModel.showLessonCompleteMessage("Lesson saved!")
+    }
 
     private fun inflateEditText(
         contentLayout: LinearLayout,
-        color: String
+        color: String,
+        lesson: Lesson
     ) {
 
         val editText = EditText(requireContext())
@@ -187,6 +190,7 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
             override fun afterTextChanged(s: Editable?) {
                 if (interactionString == s.toString()) {
                     binding.nextButton.isVisible = true
+                    saveLesson(lesson)
                 }
             }
         })

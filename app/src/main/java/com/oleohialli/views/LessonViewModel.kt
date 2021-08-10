@@ -5,6 +5,7 @@ import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
 import com.oleohialli.api.LessonRepository
 import com.oleohialli.data.Lesson
+import com.oleohialli.data.LessonDao
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
@@ -14,7 +15,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LessonViewModel @Inject constructor(
-//    private val lessonDao: LessonDao,
+    private val lessonDao: LessonDao,
     private val repository: LessonRepository
 ) : ViewModel() {
 
@@ -30,8 +31,8 @@ class LessonViewModel @Inject constructor(
 
     fun saveLesson(lesson: Lesson) {
         viewModelScope.launch {
-            //val lessonModel = Lesson(lesson.id, startTime, endTime)
-            //lessonDao.saveLesson(lessonModel)
+            val lessonModel = Lesson(lesson.id, startTime = startTime, endTime = endTime)
+            lessonDao.saveLesson(lessonModel)
         }
     }
 

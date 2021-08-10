@@ -1,11 +1,22 @@
 package com.oleohialli.data
 
-//@Entity(tableName = Constants.TABLE_NAME)
+import androidx.room.*
+import com.oleohialli.Constants
+
+@Entity(tableName = Constants.TABLE_NAME)
 data class Lesson(
-    val id: Int,
-    val content: List<LessonContent>,
-    val input: InputParams
-)  {
+    @PrimaryKey
+    var id: Int = 1,
+
+    @Ignore
+    val content: ArrayList<LessonContent> = arrayListOf(),
+
+    @Ignore
+    var input: InputParams? = null,
+
+    var startTime: String = "",
+    var endTime: String = ""
+    ) {
 
     data class LessonContent(
         val color: String,
@@ -18,4 +29,3 @@ data class Lesson(
     )
 
 }
-
