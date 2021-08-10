@@ -9,7 +9,7 @@ import androidx.room.Query
 @Dao
 interface LessonDao {
     @Query("SELECT * FROM lesson_table")
-    fun getLessons(): LiveData<List<Lesson>>
+    suspend fun getSavedLessons(): List<Lesson>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun saveLesson(lesson: Lesson)

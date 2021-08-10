@@ -1,5 +1,6 @@
 package com.oleohialli.views
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.liveData
 import androidx.lifecycle.viewModelScope
@@ -33,6 +34,12 @@ class LessonViewModel @Inject constructor(
         viewModelScope.launch {
             val lessonModel = Lesson(lesson.id, startTime = startTime, endTime = endTime)
             lessonDao.saveLesson(lessonModel)
+        }
+    }
+
+    fun getSavedLessons() {
+        viewModelScope.launch {
+            lessonDao.getSavedLessons()
         }
     }
 

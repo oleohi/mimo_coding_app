@@ -48,6 +48,7 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
 
         _binding = FragmentLessonBinding.bind(view)
 
+
         getLessons()
 
         // Use this block to collect interaction events
@@ -159,7 +160,6 @@ class LessonFragment : Fragment(R.layout.fragment_lesson) {
     private fun saveLesson(lesson: Lesson) {
         viewModel.endTime = Calendar.getInstance().time.toString()
         viewModel.saveLesson(lesson)
-        Log.v(TAG, "SAVED!!")
         viewModel.showLessonCompleteMessage("Lesson saved!")
     }
 
